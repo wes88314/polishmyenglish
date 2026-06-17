@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Statement Polish Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px;
+      color: #e2e8f0;
+    }
+    .container { width: 100%; max-width: 680px; }
+    .header { text-align: center; margin-bottom: 28px; }
+    .header .icon { font-size: 36px; margin-bottom: 8px; }
+    .header h1 { font-size: 26px; font-weight: 700; }
+    .header p { color: #94a3b8; font-size: 14px; margin-top: 6px; }
+
+    /* API Key Banner */
+    .api-banner {
+      background: #1e2a3a;
+      border: 1.5px solid #f59e0b;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .api-banner label { color: #f59e0b; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .api-banner input {
+      flex: 1;
+      min-width: 180px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #2d3748;
+      background: #0f1729;
+      color: #e2e8f0;
+      font-size: 13px;
+      outline: none;
+    }
+    .api-banner small { color: #64748b; font-size: 11px; width: 100%; }
+
+    /* Toggle */
+    .toggle {
+      display: flex;
+      background: #1e2a3a;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+      border: 1.5px solid #2d3748;
+    }
+    .toggle button {
+      flex: 1; padding: 9px 0; border-radius: 9px; border: none;
+      background: transparent; color: #94a3b8;
+      font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+    }
+    .toggle button.active { background: #6366f1; color: #fff; }
+
+    /* Mode Selector */
+    .modes { display: flex; gap: 10px; margin-bottom: 20px; }
+    .modes button {
+      flex: 1; padding: 10px 0; border-radius: 10px;
+      border: 2px solid #2d3748; background: #1e2a3a;
+      color: #94a3b8; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .modes button.active { border-color: #6366f1; background: #6366f1; color: #fff; }
+
+    /* Fields */
+    label.field-label { color: #94a3b8; font-size: 13px; display: block; margin-bottom: 6px; }
+    label.field-label span { color: #4a5568; }
+    .field { margin-bottom: 14px; }
+    input.text-input, textarea.text-input {
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      border: 1.5px solid #2d3748; background: #1e2a3a;
+      color: #e2e8f0; font-size: 14px; outline: none;
+      font-family: inherit; line-height: 1.6;
+    }
+    textarea.text-input { resize: vertical; }
+
+    /* Buttons */
+    .actions { display: flex; gap: 10px; margin-bottom: 24px; }
+    .btn-main {
+      flex: 1; padding: 12px 0; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-main:disabled { background: #2d3748; color: #4a5568; cursor: not-allowed; }
+    .btn-clear {
+      padding: 12px 20px; border-radius: 10px;
+      border: 1.5px solid #2d3748; background: transparent;
+      color: #94a3b8; font-weight: 600; font-size: 14px; cursor: pointer;
+    }
+
+    /* Status */
+    .status { text-align: center; color: #6366f1; font-size: 14px; margin-bottom: 20px; }
+    .error-box {
+      background: #2d1b1b; border: 1.5px solid #7f1d1d;
+      border-radius: 10px; padding: 12px 16px;
+      color: #fca5a5; font-size: 14px; margin-bottom: 20px;
+    }
+
+    /* Output */
+    .output-box {
+      background: #1e2a3a; border: 1.5px solid #6366f1;
+      border-radius: 12px; padding: 20px;
+    }
+    .output-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 12px;
+    }
+    .output-label { color: #6366f1; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+    .btn-copy {
+      padding: 6px 14px; border-radius: 8px;
+      border: 1.5px solid #6366f1; background: transparent;
+      color: #6366f1; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-copy.copied { background: #6366f1; color: #fff; }
+    .output-text { color: #e2e8f0; font-size: 15px; line-height: 1.75; white-space: pre-wrap; }
+
+    @media (max-width: 480px) {
+      .header h1 { font-size: 20px; }
+      .btn-main, .btn-clear { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="icon">✍️</div>
+    <h1>Statement Polish Tool</h1>
+    <p>Polish a draft — or just describe what you want to say.</p>
+  </div>
+
+  <!-- API Key -->
+  <div class="api-banner">
+    <label>🔑 API Key</label>
+    <input type="password" id="apiKey" placeholder="sk-ant-..." />
+    <small>Your key is never stored — it stays in your browser session only. Get one free at console.anthropic.com</small>
+  </div>
+
+  <!-- Input Mode Toggle -->
+  <div class="toggle">
+    <button class="active" id="btnPolish" onclick="setInputMode('polish')">✏️ Polish Draft</button>
+    <button id="btnQuick" onclick="setInputMode('quick')">⚡ Quick Generate</button>
+  </div>
+
+  <!-- Mode Selector -->
+  <div class="modes">
+    <button class="active" id="modeMessage" onclick="setMode('Message')">💬 Message</button>
+    <button id="modeEmail" onclick="setMode('Email')">📧 Email</button>
+    <button id="modeSurvey" onclick="setMode('Survey')">📋 Survey</button>
+  </div>
+
+  <!-- Context -->
+  <div class="field">
+    <label class="field-label">Context <span>(optional)</span></label>
+    <input type="text" class="text-input" id="context"
+      placeholder='e.g. "my manager", "a vendor", "AWS onboarding team"' />
+  </div>
+
+  <!-- Draft / Intent -->
+  <div class="field">
+    <label class="field-label" id="draftLabel">Your Draft</label>
+    <textarea class="text-input" id="draft" rows="6"
+      placeholder="Paste or type your rough draft here..."></textarea>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn-main" id="submitBtn" onclick="handleSubmit()">✨ Polish</button>
+    <button class="btn-clear" onclick="handleClear()">Clear</button>
+  </div>
+
+  <div class="status" id="status" style="display:none"></div>
+  <div class="error-box" id="errorBox" style="display:none"></div>
+
+  <!-- Output -->
+  <div class="output-box" id="outputBox" style="display:none">
+    <div class="output-header">
+      <span class="output-label" id="outputLabel">✨ Polished Message</span>
+      <button class="btn-copy" id="copyBtn" onclick="handleCopy()">Copy</button>
+    </div>
+    <div class="output-text" id="outputText"></div>
+  </div>
+
+</div>
+
+<script>
+  let currentMode = "Message";
+  let currentInputMode = "polish";
+
+  function setMode(m) {
+    currentMode = m;
+    ["Message","Email","Survey"].forEach(x => {
+      document.getElementById("mode"+x).classList.toggle("active", x === m);
+    });
+  }
+
+  function setInputMode(m) {
+    currentInputMode = m;
+    document.getElementById("btnPolish").classList.toggle("active", m === "polish");
+    document.getElementById("btnQuick").classList.toggle("active", m === "quick");
+    const draft = document.getElementById("draft");
+    const label = document.getElementById("draftLabel");
+    const btn = document.getElementById("submitBtn");
+    if (m === "quick") {
+      draft.rows = 3;
+      draft.placeholder = 'Describe your intent...\ne.g. "tell my manager I\'ll be late today"\ne.g. "follow up on a pending invoice"';
+      label.textContent = "What do you want to say?";
+      btn.textContent = "⚡ Generate";
+    } else {
+      draft.rows = 6;
+      draft.placeholder = "Paste or type your rough draft here...";
+      label.textContent = "Your Draft";
+      btn.textContent = "✨ Polish";
+    }
+    document.getElementById("draft").value = "";
+    document.getElementById("outputBox").style.display = "none";
+    document.getElementById("errorBox").style.display = "none";
+  }
+
+  async function handleSubmit() {
+    const apiKey = document.getElementById("apiKey").value.trim();
+    const draft = document.getElementById("draft").value.trim();
+    const context = document.getElementById("context").value.trim();
+    const isQuick = currentInputMode === "quick";
+
+    if (!apiKey) { showError("Please enter your Anthropic API key above."); return; }
+    if (!draft) return;
+
+    document.getElementById("submitBtn").disabled = true;
+    document.getElementById("outputBox").style.display = "none";
+    document.getElementById("errorBox").style.display = "none";
+    showStatus(isQuick ? "⚡ Writing your message..." : "✨ Polishing your draft...");
+
+    const systemPrompt = isQuick
+      ? `You are an expert English writing assistant. The user gives you a brief intent and you write a complete, polished ${currentMode.toLowerCase()}.
+Rules:
+- For "Message": concise, natural, ready to send.
+- For "Email": properly structured with greeting and sign-off.
+- For "Survey": clear, neutral, unbiased question(s).
+- Output ONLY the final text. No labels, no preamble.`
+      : `You are an expert English writing coach. Polish the user's rough draft into a single clean version.
+Rules:
+- For "Message": concise and natural.
+- For "Email": professionally structured with greeting and sign-off.
+- For "Survey": clear, neutral, unbiased.
+- Preserve intent. Fix grammar, clarity, flow.
+- Output ONLY the polished text. No labels, no preamble.`;
+
+    const userPrompt = `Mode: ${currentMode}\n${context ? "Context: "+context+"\n" : ""}\n${isQuick ? "What I want to say: " : "Draft:\n"}${draft}`;
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userPrompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data?.content?.[0]?.text || "";
+      if (text) showOutput(text, isQuick);
+      else showError(data?.error?.message || "No response. Please try again.");
+    } catch(e) {
+      showError("Request failed: " + e.message);
+    } finally {
+      document.getElementById("submitBtn").disabled = false;
+      document.getElementById("status").style.display = "none";
+    }
+  }
+
+  function showOutput(text, isQuick) {
+    document.getElementById("outputLabel").textContent =
+      (isQuick ? "⚡ Generated " : "✨ Polished ") + currentMode;
+    document.getElementById("outputText").textContent = text;
+    document.getElementById("outputBox").style.display = "block";
+    document.getElementById("copyBtn").textContent = "Copy";
+    document.getElementById("copyBtn").classList.remove("copied");
+  }
+
+  function handleCopy() {
+    const text = document.getElementById("outputText").textContent;
+    navigator.clipboard.writeText(text);
+    const btn = document.getElementById("copyBtn");
+    btn.textContent = "✓ Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+  }
+
+  function handleClear() {
+    document.getElementById("draft").value = "";
+    document.getElementById("context").value = "";
+    document.getElementById("outputBox").style.display = "none";
+    document.getElementById("errorBox").style.display = "none";
+    document.getElementById("status").style.display = "none";
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("errorBox");
+    el.textContent = msg; el.style.display = "block";
+    document.getElementById("status").style.display = "none";
+  }
+
+  function showStatus(msg) {
+    const el = document.getElementById("status");
+    el.textContent = msg; el.style.display = "block";
+  }
+</script>
+</body>
+</html>
