@@ -3,59 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Statement Polish Tool</title>
+  <title>Statement Polish Tool v2.0</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       min-height: 100vh;
       background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
       font-family: 'Segoe UI', system-ui, sans-serif;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 32px 16px;
-      color: #e2e8f0;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 32px 16px; color: #e2e8f0;
     }
     .container { width: 100%; max-width: 680px; }
     .header { text-align: center; margin-bottom: 28px; }
     .header .icon { font-size: 36px; margin-bottom: 8px; }
     .header h1 { font-size: 26px; font-weight: 700; }
     .header p { color: #94a3b8; font-size: 14px; margin-top: 6px; }
+    .version { display: inline-block; background: #6366f1; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
 
-    /* API Key Banner */
     .api-banner {
-      background: #1e2a3a;
-      border: 1.5px solid #f59e0b;
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
+      background: #1e2a3a; border: 1.5px solid #f59e0b;
+      border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
     }
     .api-banner label { color: #f59e0b; font-size: 13px; font-weight: 600; white-space: nowrap; }
     .api-banner input {
-      flex: 1;
-      min-width: 180px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1.5px solid #2d3748;
-      background: #0f1729;
-      color: #e2e8f0;
-      font-size: 13px;
-      outline: none;
+      flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 8px;
+      border: 1.5px solid #2d3748; background: #0f1729;
+      color: #e2e8f0; font-size: 13px; outline: none;
     }
     .api-banner small { color: #64748b; font-size: 11px; width: 100%; }
 
-    /* Toggle */
     .toggle {
-      display: flex;
-      background: #1e2a3a;
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 20px;
-      border: 1.5px solid #2d3748;
+      display: flex; background: #1e2a3a; border-radius: 12px;
+      padding: 4px; margin-bottom: 20px; border: 1.5px solid #2d3748;
     }
     .toggle button {
       flex: 1; padding: 9px 0; border-radius: 9px; border: none;
@@ -64,7 +44,6 @@
     }
     .toggle button.active { background: #6366f1; color: #fff; }
 
-    /* Mode Selector */
     .modes { display: flex; gap: 10px; margin-bottom: 20px; }
     .modes button {
       flex: 1; padding: 10px 0; border-radius: 10px;
@@ -74,7 +53,6 @@
     }
     .modes button.active { border-color: #6366f1; background: #6366f1; color: #fff; }
 
-    /* Fields */
     label.field-label { color: #94a3b8; font-size: 13px; display: block; margin-bottom: 6px; }
     label.field-label span { color: #4a5568; }
     .field { margin-bottom: 14px; }
@@ -86,7 +64,6 @@
     }
     textarea.text-input { resize: vertical; }
 
-    /* Buttons */
     .actions { display: flex; gap: 10px; margin-bottom: 24px; }
     .btn-main {
       flex: 1; padding: 12px 0; border-radius: 10px; border: none;
@@ -101,7 +78,6 @@
       color: #94a3b8; font-weight: 600; font-size: 14px; cursor: pointer;
     }
 
-    /* Status */
     .status { text-align: center; color: #6366f1; font-size: 14px; margin-bottom: 20px; }
     .error-box {
       background: #2d1b1b; border: 1.5px solid #7f1d1d;
@@ -109,23 +85,45 @@
       color: #fca5a5; font-size: 14px; margin-bottom: 20px;
     }
 
-    /* Output */
+    /* Output Cards */
+    .output-grid { display: flex; flex-direction: column; gap: 16px; }
     .output-box {
-      background: #1e2a3a; border: 1.5px solid #6366f1;
-      border-radius: 12px; padding: 20px;
+      background: #1e2a3a; border-radius: 12px; padding: 20px;
     }
+    .output-box.english { border: 1.5px solid #6366f1; }
+    .output-box.chinese { border: 1.5px solid #e879f9; }
+
     .output-header {
       display: flex; justify-content: space-between;
       align-items: center; margin-bottom: 12px;
     }
-    .output-label { color: #6366f1; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+    .output-label { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+    .output-label.en { color: #6366f1; }
+    .output-label.zh { color: #e879f9; }
+
     .btn-copy {
       padding: 6px 14px; border-radius: 8px;
-      border: 1.5px solid #6366f1; background: transparent;
-      color: #6366f1; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;
+      border: 1.5px solid; background: transparent;
+      font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;
     }
-    .btn-copy.copied { background: #6366f1; color: #fff; }
+    .btn-copy.en { border-color: #6366f1; color: #6366f1; }
+    .btn-copy.en.copied { background: #6366f1; color: #fff; }
+    .btn-copy.zh { border-color: #e879f9; color: #e879f9; }
+    .btn-copy.zh.copied { background: #e879f9; color: #fff; }
+
     .output-text { color: #e2e8f0; font-size: 15px; line-height: 1.75; white-space: pre-wrap; }
+    .output-text.zh { font-size: 16px; }
+
+    /* Chinese toggle inside output */
+    .zh-variant-toggle {
+      display: flex; gap: 8px; margin-bottom: 12px;
+    }
+    .zh-variant-toggle button {
+      padding: 5px 12px; border-radius: 8px; border: 1.5px solid #2d3748;
+      background: transparent; color: #94a3b8; font-size: 12px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .zh-variant-toggle button.active { border-color: #e879f9; background: #e879f9; color: #fff; }
 
     @media (max-width: 480px) {
       .header h1 { font-size: 20px; }
@@ -138,8 +136,8 @@
 
   <div class="header">
     <div class="icon">✍️</div>
-    <h1>Statement Polish Tool</h1>
-    <p>Polish a draft — or just describe what you want to say.</p>
+    <h1>Statement Polish Tool <span class="version">v2.0</span></h1>
+    <p>Polish a draft — or describe what you want to say. English + 中文 output.</p>
   </div>
 
   <!-- API Key -->
@@ -169,7 +167,7 @@
       placeholder='e.g. "my manager", "a vendor", "AWS onboarding team"' />
   </div>
 
-  <!-- Draft / Intent -->
+  <!-- Draft -->
   <div class="field">
     <label class="field-label" id="draftLabel">Your Draft</label>
     <textarea class="text-input" id="draft" rows="6"
@@ -186,25 +184,43 @@
   <div class="error-box" id="errorBox" style="display:none"></div>
 
   <!-- Output -->
-  <div class="output-box" id="outputBox" style="display:none">
-    <div class="output-header">
-      <span class="output-label" id="outputLabel">✨ Polished Message</span>
-      <button class="btn-copy" id="copyBtn" onclick="handleCopy()">Copy</button>
-    </div>
-    <div class="output-text" id="outputText"></div>
-  </div>
+  <div class="output-grid" id="outputGrid" style="display:none">
 
+    <!-- English Output -->
+    <div class="output-box english">
+      <div class="output-header">
+        <span class="output-label en" id="outputLabelEN">✨ Polished Message</span>
+        <button class="btn-copy en" id="copyBtnEN" onclick="handleCopy('en')">Copy</button>
+      </div>
+      <div class="output-text" id="outputEN"></div>
+    </div>
+
+    <!-- Chinese Output -->
+    <div class="output-box chinese">
+      <div class="output-header">
+        <span class="output-label zh" id="outputLabelZH">🈳 繁體中文翻譯</span>
+        <button class="btn-copy zh" id="copyBtnZH" onclick="handleCopy('zh')">複製</button>
+      </div>
+      <div class="zh-variant-toggle">
+        <button class="active" id="btnTrad" onclick="setZhVariant('traditional')">繁體</button>
+        <button id="btnSimp" onclick="setZhVariant('simplified')">简体</button>
+      </div>
+      <div class="output-text zh" id="outputZH"></div>
+    </div>
+
+  </div>
 </div>
 
 <script>
   let currentMode = "Message";
   let currentInputMode = "polish";
+  let zhVariant = "traditional";
+  let lastEN = "";
 
   function setMode(m) {
     currentMode = m;
-    ["Message","Email","Survey"].forEach(x => {
-      document.getElementById("mode"+x).classList.toggle("active", x === m);
-    });
+    ["Message","Email","Survey"].forEach(x =>
+      document.getElementById("mode"+x).classList.toggle("active", x === m));
   }
 
   function setInputMode(m) {
@@ -225,9 +241,16 @@
       label.textContent = "Your Draft";
       btn.textContent = "✨ Polish";
     }
-    document.getElementById("draft").value = "";
-    document.getElementById("outputBox").style.display = "none";
+    draft.value = "";
+    document.getElementById("outputGrid").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
+  }
+
+  function setZhVariant(v) {
+    zhVariant = v;
+    document.getElementById("btnTrad").classList.toggle("active", v === "traditional");
+    document.getElementById("btnSimp").classList.toggle("active", v === "simplified");
+    if (lastEN) translateChinese(lastEN);
   }
 
   async function handleSubmit() {
@@ -240,24 +263,17 @@
     if (!draft) return;
 
     document.getElementById("submitBtn").disabled = true;
-    document.getElementById("outputBox").style.display = "none";
+    document.getElementById("outputGrid").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     showStatus(isQuick ? "⚡ Writing your message..." : "✨ Polishing your draft...");
 
-    const systemPrompt = isQuick
-      ? `You are an expert English writing assistant. The user gives you a brief intent and you write a complete, polished ${currentMode.toLowerCase()}.
-Rules:
-- For "Message": concise, natural, ready to send.
-- For "Email": properly structured with greeting and sign-off.
-- For "Survey": clear, neutral, unbiased question(s).
-- Output ONLY the final text. No labels, no preamble.`
-      : `You are an expert English writing coach. Polish the user's rough draft into a single clean version.
-Rules:
-- For "Message": concise and natural.
-- For "Email": professionally structured with greeting and sign-off.
-- For "Survey": clear, neutral, unbiased.
-- Preserve intent. Fix grammar, clarity, flow.
-- Output ONLY the polished text. No labels, no preamble.`;
+    const systemEN = isQuick
+      ? `You are an expert English writing assistant. The user gives a brief intent and you write a complete polished ${currentMode.toLowerCase()}.
+Rules: For "Message": concise, natural. For "Email": proper greeting and sign-off. For "Survey": clear, neutral.
+Output ONLY the final text. No labels, no preamble.`
+      : `You are an expert English writing coach. Polish the user's rough draft into one clean version.
+Rules: For "Message": concise. For "Email": professional with greeting/sign-off. For "Survey": clear, neutral.
+Preserve intent. Fix grammar and clarity. Output ONLY the polished text. No labels, no preamble.`;
 
     const userPrompt = `Mode: ${currentMode}\n${context ? "Context: "+context+"\n" : ""}\n${isQuick ? "What I want to say: " : "Draft:\n"}${draft}`;
 
@@ -271,16 +287,25 @@ Rules:
           "anthropic-dangerous-direct-browser-access": "true"
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          system: systemPrompt,
+          model: "claude-sonnet-4-6", max_tokens: 1000,
+          system: systemEN,
           messages: [{ role: "user", content: userPrompt }]
         })
       });
       const data = await res.json();
-      const text = data?.content?.[0]?.text || "";
-      if (text) showOutput(text, isQuick);
-      else showError(data?.error?.message || "No response. Please try again.");
+      const enText = data?.content?.[0]?.text || "";
+      if (!enText) { showError(data?.error?.message || "No response. Please try again."); return; }
+
+      lastEN = enText;
+      const isQuickFlag = isQuick;
+      document.getElementById("outputLabelEN").textContent = (isQuickFlag ? "⚡ Generated " : "✨ Polished ") + currentMode;
+      document.getElementById("outputEN").textContent = enText;
+      document.getElementById("outputGrid").style.display = "flex";
+      document.getElementById("outputZH").textContent = "翻譯中...";
+
+      // Now translate
+      await translateChinese(enText, apiKey);
+
     } catch(e) {
       showError("Request failed: " + e.message);
     } finally {
@@ -289,30 +314,53 @@ Rules:
     }
   }
 
-  function showOutput(text, isQuick) {
-    document.getElementById("outputLabel").textContent =
-      (isQuick ? "⚡ Generated " : "✨ Polished ") + currentMode;
-    document.getElementById("outputText").textContent = text;
-    document.getElementById("outputBox").style.display = "block";
-    document.getElementById("copyBtn").textContent = "Copy";
-    document.getElementById("copyBtn").classList.remove("copied");
+  async function translateChinese(enText, apiKeyParam) {
+    const apiKey = apiKeyParam || document.getElementById("apiKey").value.trim();
+    const variant = zhVariant === "traditional" ? "Traditional Chinese (繁體中文)" : "Simplified Chinese (简体中文)";
+    document.getElementById("outputZH").textContent = "翻譯中...";
+    document.getElementById("outputLabelZH").textContent = zhVariant === "traditional" ? "🈳 繁體中文翻譯" : "🈳 简体中文翻译";
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6", max_tokens: 1000,
+          system: `You are an expert translator. Translate the given English text into ${variant}. Preserve tone, structure, and formatting. Output ONLY the translated text — no explanation, no labels.`,
+          messages: [{ role: "user", content: enText }]
+        })
+      });
+      const data = await res.json();
+      const zhText = data?.content?.[0]?.text || "";
+      document.getElementById("outputZH").textContent = zhText || "翻譯失敗，請重試。";
+    } catch {
+      document.getElementById("outputZH").textContent = "翻譯失敗，請重試。";
+    }
   }
 
-  function handleCopy() {
-    const text = document.getElementById("outputText").textContent;
-    navigator.clipboard.writeText(text);
-    const btn = document.getElementById("copyBtn");
-    btn.textContent = "✓ Copied!";
-    btn.classList.add("copied");
-    setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+  function handleCopy(lang) {
+    const id = lang === "en" ? "outputEN" : "outputZH";
+    const btnId = lang === "en" ? "copyBtnEN" : "copyBtnZH";
+    const doneLabel = lang === "en" ? "✓ Copied!" : "✓ 已複製!";
+    const defaultLabel = lang === "en" ? "Copy" : "複製";
+    navigator.clipboard.writeText(document.getElementById(id).textContent);
+    const btn = document.getElementById(btnId);
+    btn.textContent = doneLabel; btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = defaultLabel; btn.classList.remove("copied"); }, 2000);
   }
 
   function handleClear() {
     document.getElementById("draft").value = "";
     document.getElementById("context").value = "";
-    document.getElementById("outputBox").style.display = "none";
+    document.getElementById("outputGrid").style.display = "none";
     document.getElementById("errorBox").style.display = "none";
     document.getElementById("status").style.display = "none";
+    lastEN = "";
   }
 
   function showError(msg) {
@@ -320,7 +368,6 @@ Rules:
     el.textContent = msg; el.style.display = "block";
     document.getElementById("status").style.display = "none";
   }
-
   function showStatus(msg) {
     const el = document.getElementById("status");
     el.textContent = msg; el.style.display = "block";
